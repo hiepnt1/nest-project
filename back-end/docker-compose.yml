@@ -1,0 +1,10 @@
+services:
+  mongodb:
+    image: mongo:5.0.15
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_conainer:/data/db
+
+volumes:
+  mongodb_data_conainer:
