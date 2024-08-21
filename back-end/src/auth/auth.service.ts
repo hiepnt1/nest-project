@@ -5,12 +5,13 @@ import { UsersService } from '@/modules/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { verifyPasswordHelper } from '@/helper/utils/hashPassword';
 import { Logger } from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
   constructor(private usersService: UsersService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly mailService: MailerService
   ) { }
 
 
@@ -43,5 +44,25 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload)
     }
+  }
+
+  async handleRegister(registerDto: CreateAuthDto) {
+    return await this.usersService.handleRegister(registerDto)
+  }
+
+  async sendEmail() {
+    await this.mailService
+      .sendMail({
+        to: 'nguyenthehiep3232@gmail.com', // list of receivers
+        subject: 'Testing Nest MailerModule ✔', // Subject line
+        text: 'welcome to my work', // plaintext body
+        template: './confirmInfo',
+        context: {
+          name: "hepi",
+          activationCode: 14564154556
+        }
+      })
+
+    return 'ok'
   }
 }

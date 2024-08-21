@@ -32,4 +32,16 @@ export class AuthController {
     return req.user;
   }
 
+  @Post('register')
+  @Public()
+  register(@Body() registerDto: CreateAuthDto) {
+    return this.authService.handleRegister(registerDto)
+  }
+
+  @Get('send-email')
+  @Public()
+  sendEmail() {
+    return this.authService.sendEmail();
+  }
+
 }

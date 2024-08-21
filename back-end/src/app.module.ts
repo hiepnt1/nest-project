@@ -15,7 +15,9 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/passport/jwt-auth.guard';
-
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -36,7 +38,35 @@ import { JwtAuthGuard } from './auth/passport/jwt-auth.guard';
       }),
       inject: [ConfigService],
     }),
-    AuthModule
+
+    AuthModule,
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          host: configService.get<string>('MAILER_HOST'),
+          port: Number(configService.get<string>('MAILER_PORT')), // Ensure this is a number
+          ignoreTLS: true,
+          secure: true,
+          auth: {
+            user: configService.get<string>('MAILER_USER'),
+            pass: configService.get<string>('MAILER_PASS'),
+          }
+        },
+        defaults: {
+          from: configService.get<string>('MAILER_FROM'),
+        },
+        template: {
+          dir: join(__dirname, 'mail/templates'),
+          adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
+          options: {
+            strict: true,
+          },
+        },
+      }),
+      inject: [ConfigService],
+    }),
+
   ],
   controllers: [AppController],
   providers: [AppService, {

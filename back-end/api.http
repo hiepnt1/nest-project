@@ -55,3 +55,16 @@ Content-Type: application/json
 GET http://localhost:8080/api/v1/auth/profile
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NmM0NjVmMzg5ZTdhMmZkM2E5ZWYxMmUiLCJ1c2VybmFtZSI6ImhlZWhlIiwiZW1haWwiOiJhYmNkZmVAZ21haWwuY29tIiwiaWF0IjoxNzI0MjEwNTQ0LCJleHAiOjE3MjQyMTQxNDR9.IF07oYysVGNMv_b9mhpKTkXSrP9BhELzIJ6NqzJTaNM
+
+### 
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+    "name":"Test1",
+    "password": "123456789",
+    "email":"nguyenthehiep3232@gmail.com"
+}
+
+###
+GET http://localhost:8080/api/v1/auth/send-email

@@ -6,14 +6,18 @@ import mongoose, { Model } from 'mongoose';
 import { HttpException, HttpStatus, Injectable, Req } from '@nestjs/common';
 import { hashPasswordHelper } from '@/helper/utils/hashPassword';
 import aqp from 'api-query-params';
-import { Request } from 'express';
+import { v4 as uuidv4 } from 'uuid'
+import { CreateAuthDto } from '@/auth/dto/create-auth.dto';
+import dayjs from 'dayjs';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class UsersService {
 
   constructor(
     @InjectModel(User.name)
-    private userModel: Model<User>
+    private userModel: Model<User>,
+    private readonly mailService: MailerService
   ) { }
 
   isEmailExist = async (email: string) => {
@@ -82,5 +86,40 @@ export class UsersService {
     }
     else
       throw new HttpException("User not found", HttpStatus.BAD_REQUEST)
+  }
+
+  async handleRegister(registerDto: CreateAuthDto) {
+    const { email, password, name } = registerDto
+
+    // check email exist
+    const isExist = await this.isEmailExist(email)
+    if (isExist) {
+      console.log('error')
+      throw new HttpException("User with that email already exist", HttpStatus.BAD_REQUEST)
+    }
+
+    const hashPwd = await hashPasswordHelper(password)
+    const codeId = uuidv4()
+    const user = await this.userModel.create({
+      name,
+      password: hashPwd,
+      email,
+      isActive: false,
+      codeId: codeId,
+      codeExpired: dayjs().add(1, 'h')
+    })
+
+    this.mailService
+      .sendMail({
+        to: user.email, // list of receivers
+        subject: 'Activation your account', // Subject line
+        template: './confirmInfo',
+        context: {
+          name: user?.name ?? user?.email,
+          activationCode: codeId
+        }
+      })
+
+    return { _id: user._id }
   }
 }

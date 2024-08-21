@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsOptional } from "class-validator";
 
 export class CreateAuthDto {
 
@@ -7,4 +7,7 @@ export class CreateAuthDto {
 
     @IsNotEmpty({ message: "Password not empty" })
     password: string
+
+    @IsOptional()
+    name: string;
 }
