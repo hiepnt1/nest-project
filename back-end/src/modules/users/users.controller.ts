@@ -3,6 +3,8 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Request } from 'express';
+import { CreateEmailDto } from './dto/emai.dto';
+import { Public } from '@/decorator/metaDataGuard';
 
 @Controller('users')
 export class UsersController {
@@ -22,8 +24,10 @@ export class UsersController {
     return this.usersService.findAll(query, +current, +pageSize);
   }
 
-  @Get()
-  findOne(@Body() email: string) {
+  @Get('find-one')
+  @Public()
+  findOne(@Body() emailDto: CreateEmailDto) {
+    const email = emailDto.email
     return this.usersService.findByEmail(email);
   }
 

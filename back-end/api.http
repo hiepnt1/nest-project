@@ -11,6 +11,15 @@ Content-Type: application/json
 GET http://localhost:8080/api/v1/users?current=1&pageSize=2&sort='-createAt'
 
 ###
+GET http://localhost:8080/api/v1/users/find-one
+Content-Type: application/json
+
+{
+    "email": "abcdfe@gmail.com"
+}
+###
+
+###
 PATCH http://localhost:8080/api/v1/users
 Content-Type: application/json
 
@@ -29,6 +38,20 @@ POST  http://localhost:8080/api/v1/auth/log-in
 Content-Type: application/json
 
 {
-    "email": "abcdfe@gmail.com",
-    "password": "1234344"
+    "username":"abcdfe@gmail.com",
+    "password":"1234344"
 }
+
+###
+POST  http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+    "email":"abcdfe@gmail.com",
+    "password":"1234344"
+}
+
+###
+GET http://localhost:8080/api/v1/auth/profile
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NmM0NjVmMzg5ZTdhMmZkM2E5ZWYxMmUiLCJ1c2VybmFtZSI6ImhlZWhlIiwiZW1haWwiOiJhYmNkZmVAZ21haWwuY29tIiwiaWF0IjoxNzI0MjEwNTQ0LCJleHAiOjE3MjQyMTQxNDR9.IF07oYysVGNMv_b9mhpKTkXSrP9BhELzIJ6NqzJTaNM
