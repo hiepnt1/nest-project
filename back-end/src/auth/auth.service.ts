@@ -25,7 +25,6 @@ export class AuthService {
     if (!isMatchPassword) throw new BadRequestException("Wrong email or password")
 
     const payload = { sub: user._id, username: user.name, email: user.email }
-    console.log(payload)
     return {
       access_token: await this.jwtService.signAsync(payload)
     }
@@ -39,9 +38,11 @@ export class AuthService {
     return user;
   }
 
+  // add user info 
   async login(user: any) {
     const payload = { sub: user._id, username: user.name, email: user.email }
     return {
+      user: { email: user.email, _id: user._id, name: user.name },
       access_token: this.jwtService.sign(payload)
     }
   }

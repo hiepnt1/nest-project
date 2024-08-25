@@ -38,8 +38,8 @@ POST  http://localhost:8080/api/v1/auth/log-in
 Content-Type: application/json
 
 {
-    "username":"abcdfe@gmail.com",
-    "password":"1234344"
+    "username":"nguyenthehiep3232@gmail.com",
+    "password":"123456789"
 }
 
 ###

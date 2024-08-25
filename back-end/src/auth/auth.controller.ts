@@ -17,12 +17,11 @@ export class AuthController {
   @Public()
   @UseGuards(LocalAuthGuard)
   handleLogin(@Request() req) {
-    return req.user
+    return this.authService.login(req.user)
   }
 
   @Post('login')
   login(@Body() dataUser: CreateAuthDto) {
-    console.log(dataUser)
     return this.authService.signIn(dataUser.email, dataUser.password)
   }
 
