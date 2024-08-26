@@ -1,10 +1,15 @@
-import { signIn } from "@/auth";
+import { auth, signIn } from "@/auth";
 import HomePage from "@/components/layout/homepage";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+
   return (
     <div>
       <HomePage />
+
+      <div>{JSON.stringify(session)}</div>
+      {/*       
       <form action={async () => {
         'use server'
         await signIn()
@@ -12,7 +17,7 @@ export default function Home() {
 
 
         <button type="submit">Sign In</button>
-      </form>
+      </form> */}
     </div>
   );
 }

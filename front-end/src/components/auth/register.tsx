@@ -3,11 +3,31 @@ import React from 'react';
 import { Button, Col, Divider, Form, Input, notification, Row } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
+import { sendRequest } from '@/utils/api';
+import { useRouter } from 'next/navigation';
 
 const Register = () => {
-
+    const route = useRouter();
     const onFinish = async (values: any) => {
+        const { name, email, password } = values;
+        // send request from client => error cors => fix at be, not fe=> ok
+        const res = await sendRequest<IBackendRes<any>>({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/register`,
+            method: "POST",
+            body: {
+                name, email, password
+            }
+        })
 
+        console.log('check ress >>>>', res)
+        if (res?.data) {
+            route.push(`/verify/${res?.data?._id}`)
+        } else {
+            notification.error({
+                message: "Register error",
+                description: res?.message
+            })
+        }
     };
 
     return (

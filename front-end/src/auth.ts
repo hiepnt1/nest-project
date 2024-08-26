@@ -8,25 +8,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
         credentials({
             credentials: {
-                email: {},
+                username: {},
                 password: {}
             },
+            //send request from server
             authorize: async (credentials) => {
                 const res = await sendRequest<IBackendRes<ILogin>>({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/auth/log-in",
+                    url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/log-in`,
                     body: {
-                        username: credentials.email,
+                        username: credentials.username,
                         password: credentials.password
                     }
                 })
 
-                if (!res.statusCode) {
+                if (res.statusCode === 201) {
                     return {
-                        _id: res?.user?._id,
-                        name: res?.user?.name,
-                        email: res?.user?.email,
-                        access_token: res?.access_token
+                        _id: res?.data?.user?._id,
+                        name: res?.data?.user?.name,
+                        email: res?.data?.user?.email,
+                        access_token: res?.data?.access_token
                     }
                 }
                 else if (+res.statusCode === 401) {
@@ -44,11 +45,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     ],
     pages: {
         signIn: '/auth/login'
-    }, callbacks: {
+    },
+    callbacks: {
         jwt({ token, user }) {
             // get user from credential of providers
             if (user) {
-                console.log(" check user>>>", user)
                 // user is available during sign-in
                 // defference to types/next-auth.d.ts next-auth/jwt
                 token.user = (user as IUser)
@@ -57,6 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
         session({ session, token }) {
             (session.user as IUser) = token.user
+
             return session;
         }
     }

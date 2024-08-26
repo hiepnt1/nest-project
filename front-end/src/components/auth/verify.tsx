@@ -1,31 +1,36 @@
 'use client'
-import { Button, Col, Divider, Form, Input, notification, Row } from 'antd';
+import React from 'react';
+import { Button, Col, Divider, Form, Input, message, notification, Row } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
-import { authenticate } from '@/utils/actions';
+import { sendRequest } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 
-const Login = () => {
+const Verify = (props: any) => {
     const route = useRouter();
+    const { id } = props;
 
     const onFinish = async (values: any) => {
-        const { username, password } = values;
-        const res = await authenticate(username, password)
-
-        if (res?.error) {
-            //error
-            notification.error({
-                message: "Error login",
-                description: res?.error
-            })
-
-            if (res?.code === 2) {
-                route.push('/verify');
+        const { _id, code } = values;
+        console.log("check values>>", values)
+        // send request from client => error cors => fix at be, not fe=> ok
+        const res = await sendRequest<IBackendRes<any>>({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/check-code`,
+            method: "POST",
+            body: {
+                _id, code
             }
+        })
+
+        console.log('check ress >>>>', res)
+        if (res?.data) {
+            message.info(" Account active successfully")
+            route.push('/auth/login')
         } else {
-            // redirect to dashboard
-            route.push('/dashboard');
+            notification.error({
+                message: "Verify error",
+                description: res?.message
+            })
         }
     };
 
@@ -38,7 +43,7 @@ const Login = () => {
                     border: "1px solid #ccc",
                     borderRadius: "5px"
                 }}>
-                    <legend>Đăng Nhập</legend>
+                    <legend>Kích Hoạt Tài Khoản</legend>
                     <Form
                         name="basic"
                         onFinish={onFinish}
@@ -46,12 +51,22 @@ const Login = () => {
                         layout='vertical'
                     >
                         <Form.Item
-                            label="Email"
-                            name="username"
+                            label="Id"
+                            name="_id"
+                            initialValue={id}
+                            hidden
+                        >
+                            <Input disabled />
+                        </Form.Item>
+
+
+                        <Form.Item
+                            label="Code"
+                            name="code"
                             rules={[
                                 {
                                     required: true,
-                                    message: 'Please input your email!',
+                                    message: 'Please check email and input your code!',
                                 },
                             ]}
                         >
@@ -59,36 +74,23 @@ const Login = () => {
                         </Form.Item>
 
                         <Form.Item
-                            label="Password"
-                            name="password"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Please input your password!',
-                                },
-                            ]}
-                        >
-                            <Input.Password />
-                        </Form.Item>
-
-
-
-                        <Form.Item
                         >
                             <Button type="primary" htmlType="submit">
-                                Login
+                                Submit
                             </Button>
                         </Form.Item>
                     </Form>
                     <Link href={"/"}><ArrowLeftOutlined /> Quay lại trang chủ</Link>
                     <Divider />
                     <div style={{ textAlign: "center" }}>
-                        Chưa có tài khoản? <Link href={"/auth/register"}>Đăng ký tại đây</Link>
+                        Đã có tài khoản? <Link href={"/auth/login"}>Đăng nhập</Link>
                     </div>
+
                 </fieldset>
             </Col>
         </Row>
+
     )
 }
 
-export default Login;
+export default Verify;
