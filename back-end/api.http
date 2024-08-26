@@ -61,10 +61,19 @@ POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 
 {
-    "name":"Test1",
+    "name":"Test122",
     "password": "123456789",
-    "email":"nguyenthehiep3232@gmail.com"
+    "email":"hiepntfx18379@funix.edu.vn"
 }
 
 ###
 GET http://localhost:8080/api/v1/auth/send-email
+
+###
+POST http://localhost:8080/api/v1/auth/check-code
+Content-Type: application/json
+
+{
+    "_id": "66cc6395d090cb02571f653f",
+    "code": "feac9270-7ca4-4363-a0e5-09cad5c29624"
+}

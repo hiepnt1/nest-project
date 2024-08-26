@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
+import { CodeAuthDto, CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UsersService } from '@/modules/users/users.service';
 import { JwtService } from '@nestjs/jwt';
@@ -32,8 +32,9 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
+    if (!user) return null;
     const isMatchPassword = await verifyPasswordHelper(password, user.password)
-    if (!user || !isMatchPassword) return null;
+    if (!isMatchPassword) return null;
 
     return user;
   }
@@ -49,6 +50,10 @@ export class AuthService {
 
   async handleRegister(registerDto: CreateAuthDto) {
     return await this.usersService.handleRegister(registerDto)
+  }
+
+  async checkCode(code: CodeAuthDto) {
+    return await this.usersService.handleActive(code)
   }
 
   async sendEmail() {

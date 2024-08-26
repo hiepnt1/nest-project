@@ -4,7 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Request } from 'express';
 import { CreateEmailDto } from './dto/emai.dto';
-import { Public } from '@/decorator/metaDataGuard';
+import { Public } from '@/decorator/customize';
 
 @Controller('users')
 export class UsersController {

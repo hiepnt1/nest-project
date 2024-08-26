@@ -7,7 +7,7 @@ import { HttpException, HttpStatus, Injectable, Req } from '@nestjs/common';
 import { hashPasswordHelper } from '@/helper/utils/hashPassword';
 import aqp from 'api-query-params';
 import { v4 as uuidv4 } from 'uuid'
-import { CreateAuthDto } from '@/auth/dto/create-auth.dto';
+import { CodeAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
 
@@ -34,7 +34,6 @@ export class UsersService {
     // check email exist
     const isExist = await this.isEmailExist(createUserDto.email)
     if (isExist) {
-      console.log('error')
       throw new HttpException("User with that email already exist", HttpStatus.BAD_REQUEST)
     }
 
@@ -94,7 +93,6 @@ export class UsersService {
     // check email exist
     const isExist = await this.isEmailExist(email)
     if (isExist) {
-      console.log('error')
       throw new HttpException("User with that email already exist", HttpStatus.BAD_REQUEST)
     }
 
@@ -121,5 +119,29 @@ export class UsersService {
       })
 
     return { _id: user._id }
+  }
+
+  async handleActive(code: CodeAuthDto) {
+    const user = await this.userModel.findOne({
+      _id: code._id,
+      codeId: code.code
+    })
+
+    if (!user) {
+      throw new HttpException("Code invalid or expired", HttpStatus.BAD_REQUEST)
+    }
+
+    // check expired code
+    const isBeforeCheck = dayjs().isBefore(user.codeExpired)
+
+    if (isBeforeCheck) {
+      user.isActive = true;
+      await user.save();
+
+      return user
+    } else {
+      throw new HttpException("Code invalid or expired", HttpStatus.BAD_REQUEST)
+    }
+    return code;
   }
 }
