@@ -19,7 +19,6 @@ const Register = () => {
             }
         })
 
-        console.log('check ress >>>>', res)
         if (res?.data) {
             route.push(`/verify/${res?.data?._id}`)
         } else {
