@@ -144,4 +144,34 @@ export class UsersService {
     }
     return code;
   }
+
+  async retryActive(email: string) {
+    const user = await this.userModel.findOne({ email })
+
+    if (!user) throw new HttpException("Account not exist", HttpStatus.NOT_FOUND);
+
+    if (!user.isActive) {
+      const codeId = uuidv4();
+
+      // update user
+      await user.updateOne({
+        codeId: codeId,
+        codeExpired: dayjs().add(5, 'minutes')
+      })
+
+      //send email
+      await this.mailService
+        .sendMail({
+          to: user?.email, // list of receivers
+          subject: 'Retry Active Account ✔', // Subject line
+          template: './confirmInfo',
+          context: {
+            name: user?.name ?? user?.email,
+            activationCode: codeId
+          }
+        })
+
+      return { _id: user._id, message: "Code has sent, please check your email" };
+    }
+  }
 }

@@ -56,6 +56,10 @@ export class AuthService {
     return await this.usersService.handleActive(code)
   }
 
+  async retryActive(email: string) {
+    return await this.usersService.retryActive(email)
+  }
+
   async sendEmail() {
     await this.mailService
       .sendMail({
