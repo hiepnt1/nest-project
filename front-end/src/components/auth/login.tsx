@@ -2,45 +2,45 @@
 import { Button, Col, Divider, Form, Input, notification, Row } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
 import { authenticate } from '@/utils/actions';
 import { useRouter } from 'next/navigation';
-import ModelReactive from './modal.verify';
 import { useState } from 'react';
+import ModalChangePassword from './modal.change.password';
+import ModelReactive from './modal.verify';
 
 const Login = () => {
-    const route = useRouter();
+    const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [userEmail, setUserEmail] = useState("")
+    const [userEmail, setUserEmail] = useState("");
+
+    const [changePassword, setChangePassword] = useState(false);
 
     const onFinish = async (values: any) => {
         const { username, password } = values;
-        setUserEmail('')
-        const res = await authenticate(username, password)
+        setUserEmail("");
+        //trigger sign-in
+        const res = await authenticate(username, password);
 
         if (res?.error) {
-
+            //error
             if (res?.code === 2) {
                 setIsModalOpen(true);
-                setUserEmail(username)
+                setUserEmail(username);
                 return;
             }
-            //error
             notification.error({
                 message: "Error login",
                 description: res?.error
             })
 
-
         } else {
-            // redirect to dashboard
-            route.push('/dashboard');
+            //redirect to /dashboard
+            router.push('/dashboard');
         }
     };
 
     return (
         <>
-
             <Row justify={"center"} style={{ marginTop: "30px" }}>
                 <Col xs={24} md={16} lg={8}>
                     <fieldset style={{
@@ -86,9 +86,16 @@ const Login = () => {
 
                             <Form.Item
                             >
-                                <Button type="primary" htmlType="submit">
-                                    Login
-                                </Button>
+                                <div style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center"
+                                }}>
+                                    <Button type="primary" htmlType="submit">
+                                        Login
+                                    </Button>
+                                    <Button type='link' onClick={() => setChangePassword(true)}>Quên mật khẩu ?</Button>
+                                </div>
                             </Form.Item>
                         </Form>
                         <Link href={"/"}><ArrowLeftOutlined /> Quay lại trang chủ</Link>
@@ -99,7 +106,15 @@ const Login = () => {
                     </fieldset>
                 </Col>
             </Row>
-            <ModelReactive setIsModalOpen={setIsModalOpen} isModalOpen={isModalOpen} userEmail={userEmail} />
+            <ModelReactive
+                isModalOpen={isModalOpen}
+                setIsModalOpen={setIsModalOpen}
+                userEmail={userEmail}
+            />
+            <ModalChangePassword
+                isModalOpen={changePassword}
+                setIsModalOpen={setChangePassword}
+            />
         </>
     )
 }
