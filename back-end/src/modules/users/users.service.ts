@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { CodeAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
+import { ChangePwdDto } from '@/auth/dto/update-auth.dto';
 
 @Injectable()
 export class UsersService {
@@ -60,7 +61,14 @@ export class UsersService {
     const skip = (totalPages - 1) * pageSize;
 
     const results = await this.userModel.find(filter).limit(pageSize).skip(skip).sort(sort as any).select('-password')
-    return { results, totalPages };
+    return {
+      results, totalPages, meta: {
+        current: current,
+        pageSize: pageSize,
+        pages: totalPages,
+        totalItems: totalItems
+      }
+    };
   }
 
   findOne(id: number) {
@@ -142,7 +150,6 @@ export class UsersService {
     } else {
       throw new HttpException("Code invalid or expired", HttpStatus.BAD_REQUEST)
     }
-    return code;
   }
 
   async retryActive(email: string) {
@@ -172,6 +179,63 @@ export class UsersService {
         })
 
       return { _id: user._id, message: "Code has sent, please check your email" };
+    }
+  }
+
+  async retryPassword(email: string) {
+    const user = await this.userModel.findOne({ email })
+
+    if (!user) throw new HttpException("Account not exist", HttpStatus.NOT_FOUND);
+
+    if (!user.isActive) {
+      throw new HttpException("Account not active", HttpStatus.BAD_REQUEST);
+    }
+
+    const codeId = uuidv4();
+
+    // update user
+    await user.updateOne({
+      codeId: codeId,
+      codeExpired: dayjs().add(5, 'minutes')
+    })
+
+    //send email
+    await this.mailService
+      .sendMail({
+        to: user?.email, // list of receivers
+        subject: 'Change your password ✔', // Subject line
+        template: './confirmInfo',
+        context: {
+          name: user?.name ?? user?.email,
+          activationCode: codeId
+        }
+      })
+
+    return { email: user.email, _id: user._id };
+  }
+
+  async changePassword(data: ChangePwdDto) {
+    if (data.password !== data.confirmPassword) {
+      throw new HttpException("Password/Confirm password not match", HttpStatus.FORBIDDEN)
+    }
+
+    // check email
+    const user = await this.userModel.findOne({ email: data.email })
+
+    if (!user) throw new HttpException("Account not exist", HttpStatus.NOT_FOUND);
+
+    // check expired code
+    const isBeforeCheck = dayjs().isBefore(user.codeExpired)
+
+    if (isBeforeCheck) {
+      // hash password;
+      const hashPassword = await hashPasswordHelper(data.password);
+      user.password = hashPassword;
+      await user.save();
+
+      return user
+    } else {
+      throw new HttpException("Code invalid or expired", HttpStatus.BAD_REQUEST)
     }
   }
 }
